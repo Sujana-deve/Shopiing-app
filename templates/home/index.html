@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+
+{% block start %}
+
+<!-- SEARCH BAR -->
+<div class="container mt-4">
+  <form class="d-flex justify-content-center">
+    <input class="form-control w-50 me-2 rounded-pill" type="search" placeholder="Search for products...">
+    <button class="btn btn-dark rounded-pill" type="submit">Search</button>
+  </form>
+</div>
+
+<!-- FEATURED PRODUCTS -->
+<div class="container my-5">
+  <h2 class="text-center fw-bold text-secondary mb-4">Featured Products</h2>
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for product in products %}
+    <div class="col">
+      <div class="card h-100 shadow-sm border-0">
+        <img src="/media/{{ product.product_images.first.image }}" class="card-img-top" alt="{{ product.product_name }}">
+        <div class="card-body text-center">
+          <a href="{% url 'get_product' product.slug %}"><h6 class="card-title fw-bold"><b>{{ product.product_name }}</b></a></h6>
+          <p class="text-primary fs-5">${{ product.price }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- CUSTOM STYLE -->
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+
+  .card-img-top {
+    height: 220px;
+    object-fit: contain;
+    padding: 15px;
+  }
+
+  .navbar-brand span {
+    color: #ffc107;
+  }
+
+  .nav-link {
+    color: #f8f9fa !important;
+  }
+
+  .nav-link:hover {
+    color: #ffc107 !important;
+  }
+
+  .btn-warning {
+    color: #212529;
+  }
+
+  h2 {
+    letter-spacing: 1px;
+  }
+</style>
+
+{% endblock %}
