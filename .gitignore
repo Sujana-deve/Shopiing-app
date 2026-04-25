@@ -1,0 +1,23 @@
+# Environment
+env/
+venv/
+.env
+
+# Database (never push this)
+db.sqlite3
+
+# Media uploads (user files)
+media/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

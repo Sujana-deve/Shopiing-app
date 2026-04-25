@@ -1,0 +1,252 @@
+{% extends "base/base.html" %}
+{% block title %}My Cart - FashionHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-wrapper {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    .cart-item-card {
+        border-radius: 12px;
+        border: 1px solid #e9e9e9;
+        background: #fff;
+        transition: box-shadow 0.2s;
+    }
+    .cart-item-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .cart-product-img {
+        width: 90px; height: 90px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #f9f9f9;
+        padding: 6px;
+        flex-shrink: 0;
+    }
+    .no-img-box {
+        width: 90px; height: 90px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .qty-btn {
+        width: 30px; height: 30px;
+        padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+    .qty-display {
+        width: 36px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .order-summary-card {
+        border-radius: 14px;
+        border: 1px solid #e9e9e9;
+        background: #fff;
+        position: sticky;
+        top: 80px;
+    }
+    .remove-btn {
+        color: #ef4444;
+        border: none;
+        background: none;
+        font-size: 0.82rem;
+        padding: 0;
+        cursor: pointer;
+    }
+    .remove-btn:hover { text-decoration: underline; }
+    .empty-cart-icon { font-size: 4rem; color: #d1d5db; }
+</style>
+{% endblock %}
+
+{% block start %}
+<div class="container py-4">
+    <div class="cart-wrapper">
+
+        <!-- Heading -->
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-cart3 text-warning fs-4"></i>
+            <h4 class="fw-bold mb-0">My Cart</h4>
+            {% if items %}
+                <span class="badge bg-warning text-dark ms-1">
+                    {{ cart.get_cart_count }} item{{ cart.get_cart_count|pluralize }}
+                </span>
+            {% endif %}
+        </div>
+
+        {% if items %}
+        <div class="row g-4">
+
+            <!-- LEFT: Items -->
+            <div class="col-lg-8">
+                <div class="d-flex flex-column gap-3">
+                    {% for item in items %}
+                    <div class="cart-item-card p-3">
+                        <div class="d-flex gap-3 align-items-start">
+
+                            <!-- Image -->
+                            <a href="{% url 'get-product' item.product.slug %}">
+                                {% if item.product.product_images.first %}
+                                    <img src="/media/{{ item.product.product_images.first.image }}"
+                                         class="cart-product-img"
+                                         alt="{{ item.product.product_name }}">
+                                {% else %}
+                                    <div class="no-img-box">
+                                        <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </a>
+
+                            <!-- Info -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <a href="{% url 'get-product' item.product.slug %}"
+                                           class="text-decoration-none text-dark">
+                                            <h6 class="fw-bold mb-1">{{ item.product.product_name }}</h6>
+                                        </a>
+                                        <p class="text-muted small mb-1">
+                                            {{ item.product.category.category_name }}
+                                        </p>
+                                        {% if item.color_variant %}
+                                        <span class="badge bg-light text-dark border me-1">
+                                            <i class="bi bi-circle-fill me-1" style="font-size:0.6rem;"></i>
+                                            {{ item.color_variant.color_name }}
+                                        </span>
+                                        {% endif %}
+                                        {% if item.size_variant %}
+                                        <span class="badge bg-light text-dark border">
+                                            Size: {{ item.size_variant.size_name }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="fw-bold text-dark ms-2">${{ item.get_total_price }}</span>
+                                </div>
+
+                                <!-- Qty + remove -->
+                                <div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">
+                                    <span class="text-muted small">
+                                        ${{ item.product.get_discounted_price }} each
+                                    </span>
+
+                                    <div class="d-flex align-items-center gap-2">
+
+                                        <form method="POST" action="{% url 'update-cart' item.product.slug %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="decrease">
+                                            <button type="submit" class="btn btn-outline-secondary qty-btn">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        </form>
+
+                                        <span class="qty-display">{{ item.quantity }}</span>
+
+                                        <form method="POST" action="{% url 'update-cart' item.product.slug %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="increase">
+                                            <button type="submit" class="btn btn-outline-secondary qty-btn">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        </form>
+
+                                        <form method="POST" action="{% url 'remove-from-cart' item.product.slug %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="remove-btn ms-2">
+                                                <i class="bi bi-trash me-1"></i>Remove
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-3">
+                    <a href="{% url 'all-products' %}" class="btn btn-outline-dark btn-sm rounded-pill">
+                        <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <!-- RIGHT: Summary -->
+            <div class="col-lg-4">
+                <div class="order-summary-card p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-receipt text-warning me-2"></i>Order Summary
+                    </h5>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">
+                            Subtotal ({{ cart.get_cart_count }} item{{ cart.get_cart_count|pluralize }})
+                        </span>
+                        <span class="fw-semibold">${{ cart.get_cart_total }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Shipping</span>
+                        <span class="fw-semibold {% if shipping == 0 %}text-success{% endif %}">
+                            {% if shipping == 0 %}Free{% else %}${{ shipping }}{% endif %}
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Total</span>
+                        <span class="fw-bold fs-5 text-dark">${{ grand_total }}</span>
+                    </div>
+
+                    {% if shipping_remaining > 0 %}
+                    <div class="alert alert-warning py-2 small text-center mb-3">
+                        <i class="bi bi-truck me-1"></i>
+                        Add ${{ shipping_remaining }} more for free shipping!
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success py-2 small text-center mb-3">
+                        <i class="bi bi-check-circle me-1"></i>
+                        You qualify for free shipping!
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid">
+                        <a href="#" class="btn btn-warning btn-lg fw-bold rounded-pill">
+                            <i class="bi bi-lock me-2"></i>Checkout
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check me-1 text-success"></i>
+                            Secure checkout · SSL encrypted
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <div class="empty-cart-icon mb-3">
+                <i class="bi bi-cart-x"></i>
+            </div>
+            <h5 class="fw-bold text-muted">Your cart is empty</h5>
+            <p class="text-muted small mb-4">Looks like you haven't added anything yet.</p>
+            <a href="{% url 'all-products' %}" class="btn btn-warning btn-lg fw-bold rounded-pill px-5">
+                <i class="bi bi-bag me-2"></i>Start Shopping
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
