@@ -1,111 +1,289 @@
-{% extends "base/base.html"%}
+{% extends "base/base.html" %}
+{% block title %}{{ product.product_name }} — FashionHub{% endblock %}
 
-{%  block start %}
+{% block extra_css %}
+<style>
+    .main-img-wrap {
+        background: #f9f9f9;
+        border-radius: 14px;
+        overflow: hidden;
+        height: 420px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .main-img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        padding: 20px;
+    }
+    .thumb-img {
+        width: 70px; height: 70px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        background: #f0f0f0;
+        cursor: pointer;
+        padding: 4px;
+        transition: border-color 0.2s;
+    }
+    .thumb-img:hover,
+    .thumb-img.active { border-color: #ffc107; }
 
-<section class="section-content padding-y bg">
-    <div class="container">
-    
-    <!-- ============================ COMPONENT 1 ================================= -->
-    <div class="card">
-        <div class="row no-gutters">
-            <aside class="col-md-6">
-    <article class="gallery-wrap"> 
-    <div class="img-big-wrap">
-      <div> <a href="#"><img src="/media/{{product.product_images.first.image}}"></a></div>
-    </div> <!-- slider-product.// -->
-    <div class="thumbs-wrap">
-      {% for image in product.product_images.all %}
-      <a href="#" class="item-thumb"> <img src="/media/{{image.image}}"></a>
-      
-      {% endfor %}
+    .variant-btn {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 6px 14px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .variant-btn:hover,
+    .variant-btn.selected {
+        border-color: #ffc107;
+        background: #ffc107;
+        color: #111;
+    }
+    .product-info-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e9e9e9;
+        padding: 2rem;
+    }
+    .related-img {
+        height: 160px;
+        object-fit: contain;
+        padding: 10px;
+        background: #f9f9f9;
+    }
+</style>
+{% endblock %}
 
-    </div> <!-- slider-nav.// -->
-    </article> <!-- gallery-wrap .end// -->
-            </aside>
-            <main class="col-md-6 border-left">
-    <article class="content-body">
-    
-    <h2 class="title">{{product.product_name}}</h2>
-    
-    <div class="rating-wrap my-3">
-        <ul class="rating-stars">
-            <li style="width:80%" class="stars-active"> 
-                <i class="fa fa-star"></i> <i class="fa fa-star"></i> 
-                <i class="fa fa-star"></i> <i class="fa fa-star"></i> 
-                <i class="fa fa-star"></i> 
+{% block start %}
+<div class="container py-4">
+
+    <!-- Breadcrumb -->
+    <nav class="mb-3" aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="/" class="text-warning text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'all-products' %}" class="text-warning text-decoration-none">Shop</a>
             </li>
-            <li>
-                <i class="fa fa-star"></i> <i class="fa fa-star"></i> 
-                <i class="fa fa-star"></i> <i class="fa fa-star"></i> 
-                <i class="fa fa-star"></i> 
+            <li class="breadcrumb-item">
+                <a href="{% url 'category-products' product.category.slug %}"
+                   class="text-warning text-decoration-none">
+                    {{ product.category.category_name }}
+                </a>
             </li>
-        </ul>
-        <small class="label-rating text-muted">132 reviews</small>
-        <small class="label-rating text-success"> <i class="fa fa-clipboard-check"></i> 154 orders </small>
-    </div> <!-- rating-wrap.// -->
-    
-    <div class="mb-3"> 
-        <var class="price h4">${{product.price}}.00</var> 
-        <span class="text-muted">/per kg</span> 
-    </div> <!-- price-detail-wrap .// -->
-    
-    <p>{{product.product_desription}}</p>
-    
-    
-    <dl class="row">
-      <dt class="col-sm-3">Model#</dt>
-      <dd class="col-sm-9">Odsy-1000</dd>
-    
-      <dt class="col-sm-3">Color</dt>
-      <dd class="col-sm-9">Brown</dd>
-    
-      <dt class="col-sm-3">Delivery</dt>
-      <dd class="col-sm-9">Russia, USA, and Europe </dd>
-    </dl>
-    
-    <hr>
-        <div class="form-row">
-            <div class="form-group col-md flex-grow-0">
-                <label>Quantity</label>
-                <div class="input-group mb-3 input-spinner">
-                  <div class="input-group-prepend">
-                    <button class="btn btn-light" type="button" id="button-plus"> + </button>
-                  </div>
-                  <input type="text" class="form-control" value="1">
-                  <div class="input-group-append">
-                    <button class="btn btn-light" type="button" id="button-minus"> − </button>
-                  </div>
-                </div>
-            </div> <!-- col.// -->
-            {% if product.size_variant.count %}
-            <div class="form-group col-md">
-                    <label>Select size</label>
-                    <div class="mt-1">
-                      {% for size in product.size_variant.all %}
-                      
-                        <label class="custom-control custom-radio custom-control-inline">
-                          <input type="radio" name="select_size" checked="" class="custom-control-input">
-                          <div class="custom-control-label">{{size.size_name}}</div>
-                        </label>
-    
-                      {% endfor %}
-    
-                    </div>
+            <li class="breadcrumb-item active">{{ product.product_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+
+        <!-- LEFT: Images -->
+        <div class="col-lg-6">
+            <div class="main-img-wrap">
+                {% if images.first %}
+                    <img src="/media/{{ images.first.image }}"
+                         class="main-img" id="mainImage"
+                         alt="{{ product.product_name }}">
+                {% else %}
+                    <i class="bi bi-image text-muted" style="font-size:4rem;"></i>
+                {% endif %}
+            </div>
+
+            <!-- Thumbnails -->
+            {% if images.count > 1 %}
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                {% for img in images %}
+                <img src="/media/{{ img.image }}"
+                     class="thumb-img {% if forloop.first %}active{% endif %}"
+                     onclick="changeImage(this, '/media/{{ img.image }}')"
+                     alt="thumb {{ forloop.counter }}">
+                {% endfor %}
             </div>
             {% endif %}
-            <!-- col.// -->
-        </div> <!-- row.// -->
-    
-        <a href="#" class="btn  btn-primary"> Buy now </a>
-        <a href="#" class="btn  btn-outline-primary"> <span class="text">Add to cart</span> <i class="fas fa-shopping-cart"></i>  </a>
-    </article> <!-- product-info-aside .// -->
-            </main> <!-- col.// -->
-        </div> <!-- row.// -->
-    </div> <!-- card.// -->
-    <!-- ============================ COMPONENT 1 END .// ================================= -->
-    
+        </div>
 
+        <!-- RIGHT: Product info -->
+        <div class="col-lg-6">
+            <div class="product-info-card">
+
+                <p class="text-muted small mb-1">{{ product.category.category_name }}</p>
+                <h3 class="fw-bold mb-2">{{ product.product_name }}</h3>
+
+                <!-- Price -->
+                <div class="mb-3">
+                    {% if product.discount > 0 %}
+                        <span class="fs-3 fw-bold text-danger">${{ product.get_discounted_price }}</span>
+                        <span class="text-muted text-decoration-line-through ms-2">${{ product.price }}</span>
+                        <span class="badge bg-danger ms-2">{{ product.discount }}% OFF</span>
+                    {% else %}
+                        <span class="fs-3 fw-bold text-dark">${{ product.price }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Stock badge -->
+                {% if product.is_in_stock %}
+                    <span class="badge bg-success mb-3">
+                        <i class="bi bi-check-circle me-1"></i>In Stock ({{ product.stock }} left)
+                    </span>
+                {% else %}
+                    <span class="badge bg-danger mb-3">
+                        <i class="bi bi-x-circle me-1"></i>Out of Stock
+                    </span>
+                {% endif %}
+
+                <!-- Description -->
+                {% if product.description %}
+                <p class="text-muted mb-3" style="font-size:0.93rem;">{{ product.description }}</p>
+                {% endif %}
+
+                <!-- Add to cart form -->
+                <form method="POST" action="{% url 'add-to-cart' product.slug %}">
+                    {% csrf_token %}
+
+                    <!-- Color variants -->
+                    {% if colors %}
+                    <div class="mb-3">
+                        <p class="fw-semibold small mb-2">
+                            Color: <span id="selectedColor" class="text-muted">None selected</span>
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for color in colors %}
+                            <button type="button"
+                                    class="variant-btn"
+                                    onclick="selectVariant(this, 'color', '{{ color.color_name }}')">
+                                {{ color.color_name }}
+                                {% if color.price > 0 %}
+                                    <small class="text-muted">(+${{ color.price }})</small>
+                                {% endif %}
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="color" id="colorInput" value="">
+                    </div>
+                    {% endif %}
+
+                    <!-- Size variants -->
+                    {% if sizes %}
+                    <div class="mb-3">
+                        <p class="fw-semibold small mb-2">
+                            Size: <span id="selectedSize" class="text-muted">None selected</span>
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for size in sizes %}
+                            <button type="button"
+                                    class="variant-btn"
+                                    onclick="selectVariant(this, 'size', '{{ size.size_name }}')">
+                                {{ size.size_name }}
+                                {% if size.price > 0 %}
+                                    <small class="text-muted">(+${{ size.price }})</small>
+                                {% endif %}
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="size" id="sizeInput" value="">
+                    </div>
+                    {% endif %}
+
+                    <!-- Add to cart button -->
+                    <div class="d-grid gap-2 mt-4">
+                        {% if product.is_in_stock %}
+                        <button type="submit" class="btn btn-warning btn-lg fw-bold">
+                            <i class="bi bi-cart-plus me-2"></i>Add to Cart
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-secondary btn-lg" disabled>
+                            Out of Stock
+                        </button>
+                        {% endif %}
+                        <a href="{% url 'all-products' %}" class="btn btn-outline-dark">
+                            <i class="bi bi-arrow-left me-1"></i>Continue Shopping
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Trust badges -->
+                <div class="d-flex gap-3 mt-4 flex-wrap">
+                    <small class="text-muted">
+                        <i class="bi bi-truck text-warning me-1"></i>Free shipping over $50
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-arrow-counterclockwise text-warning me-1"></i>30-day returns
+                    </small>
+                    <small class="text-muted">
+                        <i class="bi bi-shield-check text-warning me-1"></i>Secure payment
+                    </small>
+                </div>
+
+            </div>
+        </div>
     </div>
-    </section>
 
+    <!-- Related products -->
+    {% if related %}
+    <div class="mt-5">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-grid text-warning me-2"></i>You Might Also Like
+        </h5>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+            {% for rel in related %}
+            <div class="col">
+                <div class="card border-0 shadow-sm h-100" style="border-radius:12px; overflow:hidden;">
+                    <a href="{% url 'get-product' rel.slug %}">
+                        {% if rel.product_images.first %}
+                            <img src="/media/{{ rel.product_images.first.image }}"
+                                 class="card-img-top related-img"
+                                 alt="{{ rel.product_name }}">
+                        {% else %}
+                            <div class="related-img d-flex align-items-center justify-content-center bg-light">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    <div class="card-body p-2 text-center">
+                        <p class="fw-bold small mb-1 text-truncate">{{ rel.product_name }}</p>
+                        <span class="text-danger fw-bold small">${{ rel.get_discounted_price }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Swap main image on thumbnail click
+    function changeImage(thumb, src) {
+        document.getElementById('mainImage').src = src;
+        document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+    }
+
+    // Select color/size variant
+    function selectVariant(btn, type, value) {
+        // Deselect siblings
+        btn.closest('.d-flex').querySelectorAll('.variant-btn').forEach(b => {
+            b.classList.remove('selected');
+        });
+        btn.classList.add('selected');
+
+        if (type === 'color') {
+            document.getElementById('colorInput').value = value;
+            document.getElementById('selectedColor').textContent = value;
+        } else {
+            document.getElementById('sizeInput').value = value;
+            document.getElementById('selectedSize').textContent = value;
+        }
+    }
+</script>
 {% endblock %}
