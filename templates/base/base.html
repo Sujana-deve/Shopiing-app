@@ -124,6 +124,7 @@
 
             <!-- Search -->
             <form class="d-flex me-3" method="GET" action="{% url 'all-products' %}">
+                 {% csrf_token %}
                 <div class="input-group input-group-sm" style="width:220px">
                     <input class="form-control border-0 bg-secondary bg-opacity-25"
                            style="color:white;" type="search" name="q"

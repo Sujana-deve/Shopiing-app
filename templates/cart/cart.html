@@ -218,7 +218,8 @@
                     {% endif %}
 
                     <div class="d-grid">
-                        <a href="#" class="btn btn-warning btn-lg fw-bold rounded-pill">
+                        <!-- ✅ UPDATED: was href="#", now points to checkout -->
+                        <a href="{% url 'checkout' %}" class="btn btn-warning btn-lg fw-bold rounded-pill">
                             <i class="bi bi-lock me-2"></i>Checkout
                         </a>
                     </div>

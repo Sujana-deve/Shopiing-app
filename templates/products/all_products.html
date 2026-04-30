@@ -93,6 +93,7 @@
 
         <!-- Sort -->
         <form method="GET" class="d-flex align-items-center gap-2">
+             {% csrf_token %}
             {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
             {% if request.GET.category %}<input type="hidden" name="category" value="{{ request.GET.category }}">{% endif %}
             <label class="text-muted small mb-0">Sort:</label>
