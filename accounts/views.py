@@ -5,10 +5,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from .models import profile
+from orders.models import Order
 
 
 def login_page(request):
-    # Already logged in → go home
     if request.user.is_authenticated:
         return redirect('index')
 
@@ -26,7 +26,6 @@ def login_page(request):
             messages.error(request, "No account found with that email. Please register.")
             return redirect('login')
 
-        # Check email verification
         user_profile = profile.objects.filter(user=user_obj).first()
         if user_profile and not user_profile.is_email_verified:
             messages.warning(request, "Please verify your email before logging in. Check your inbox.")
@@ -41,7 +40,6 @@ def login_page(request):
         login(request, user)
         messages.success(request, f"Welcome back, {user.first_name}! 👋")
 
-        # Respect 'next' param (e.g. redirected from cart/checkout)
         next_url = request.GET.get('next')
         return redirect(next_url if next_url else 'index')
 
@@ -53,13 +51,12 @@ def register_page(request):
         return redirect('index')
 
     if request.method == 'POST':
-        first_name = request.POST.get('first_name', '').strip()
-        last_name  = request.POST.get('last_name', '').strip()
-        email      = request.POST.get('email', '').strip().lower()
-        password   = request.POST.get('password', '')
+        first_name       = request.POST.get('first_name', '').strip()
+        last_name        = request.POST.get('last_name', '').strip()
+        email            = request.POST.get('email', '').strip().lower()
+        password         = request.POST.get('password', '')
         confirm_password = request.POST.get('confirm_password', '')
 
-        # --- Validations ---
         if not all([first_name, last_name, email, password]):
             messages.error(request, "All fields are required.")
             return HttpResponseRedirect(request.path_info)
@@ -76,7 +73,6 @@ def register_page(request):
             messages.warning(request, "An account with this email already exists.")
             return HttpResponseRedirect(request.path_info)
 
-        # --- Create user (profile is auto-created via signal in models.py) ---
         User.objects.create_user(
             username=email,
             email=email,
@@ -116,14 +112,12 @@ def user_profile_page(request):
     user_profile, _ = profile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        # Handle profile image update
         profile_image = request.FILES.get('profile_image')
         if profile_image:
             user_profile.profile_image = profile_image
             user_profile.save()
             messages.success(request, "Profile picture updated!")
 
-        # Handle name update
         first_name = request.POST.get('first_name', '').strip()
         last_name  = request.POST.get('last_name', '').strip()
         if first_name:
@@ -134,9 +128,14 @@ def user_profile_page(request):
         messages.success(request, "Profile updated successfully.")
         return redirect('user-profile')
 
+    # Fetch all orders for this user, newest first, with items + products in 2 queries
+    orders = Order.objects.filter(
+        user=request.user
+    ).prefetch_related('items__product').order_by('-created_at')
+
     context = {
         'user_profile': user_profile,
-        'orders': [],  # hook up Order model later
+        'orders':       orders,
     }
     return render(request, 'accounts/profile.html', context)
 
