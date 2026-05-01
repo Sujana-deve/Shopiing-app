@@ -7,7 +7,7 @@ def get_product(request, slug):
     images     = product.product_images.all()
     related    = Product.objects.filter(
                     category=product.category
-                 ).exclude(id=product.id)[:4]
+                 ).exclude(uid=product.uid)[:4]
 
     # Collect selected variants from URL params (e.g. ?color=Red&size=M)
     selected_color = request.GET.get('color', None)
