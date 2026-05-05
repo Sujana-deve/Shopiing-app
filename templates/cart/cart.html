@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-{% block title %}My Cart - FashionHub{% endblock %}
+{% block title %}My Cart — FashionHub{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -91,8 +91,8 @@
 
                             <!-- Image -->
                             <a href="{% url 'get-product' item.product.slug %}">
-                                {% if item.product.product_images.first %}
-                                    <img src="/media/{{ item.product.product_images.first.image }}"
+                                {% if item.product.images.first %}
+                                    <img src="/media/{{ item.product.images.first.image }}"
                                          class="cart-product-img"
                                          alt="{{ item.product.product_name }}">
                                 {% else %}
@@ -218,7 +218,6 @@
                     {% endif %}
 
                     <div class="d-grid">
-                        <!-- ✅ UPDATED: was href="#", now points to checkout -->
                         <a href="{% url 'checkout' %}" class="btn btn-warning btn-lg fw-bold rounded-pill">
                             <i class="bi bi-lock me-2"></i>Checkout
                         </a>

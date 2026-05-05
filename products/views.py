@@ -1,76 +1,89 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Product, Category
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Product, Category, Review
 
 
 def get_product(request, slug):
-    product    = get_object_or_404(Product, slug=slug)
-    images     = product.product_images.all()
-    related    = Product.objects.filter(
-                    category=product.category
-                 ).exclude(uid=product.uid)[:4]
+    product          = get_object_or_404(Product, slug=slug)
+    images           = product.images.all()
+    colors           = product.color_variant.all()
+    sizes            = product.size_variant.all()
+    related          = Product.objects.filter(
+                           category=product.category).exclude(slug=slug)[:4]
 
-    # Collect selected variants from URL params (e.g. ?color=Red&size=M)
-    selected_color = request.GET.get('color', None)
-    selected_size  = request.GET.get('size', None)
+    reviews          = product.reviews.select_related('user').order_by('-created_at')
+    user_review      = reviews.filter(user=request.user).first() \
+                       if request.user.is_authenticated else None
 
     context = {
         'product':        product,
         'images':         images,
+        'colors':         colors,
+        'sizes':          sizes,
         'related':        related,
-        'selected_color': selected_color,
-        'selected_size':  selected_size,
-        'colors':         product.color_variant.all(),
-        'sizes':          product.size_variant.all(),
+        'reviews':        reviews,
+        'user_review':    user_review,
+        'average_rating': product.get_average_rating(),
+        'review_count':   product.get_review_count(),
+        'rating_range':   range(1, 6),
     }
     return render(request, 'products/product.html', context)
 
 
 def category_products(request, slug):
     category = get_object_or_404(Category, slug=slug)
-    products = category.products.all()
-
-    # Optional price filter from query params (?min=100&max=500)
-    min_price = request.GET.get('min')
-    max_price = request.GET.get('max')
-    if min_price:
-        products = products.filter(price__gte=min_price)
-    if max_price:
-        products = products.filter(price__lte=max_price)
-
-    context = {
-        'category': category,
-        'products': products,
-    }
-    return render(request, 'products/category.html', context)
+    products = Product.objects.filter(category=category)
+    return render(request, 'products/category.html',
+                  {'category': category, 'products': products})
 
 
 def all_products(request):
     products   = Product.objects.all()
     categories = Category.objects.all()
 
-    # Filter by category slug
-    cat_slug = request.GET.get('category')
-    if cat_slug:
-        products = products.filter(category__slug=cat_slug)
+    q             = request.GET.get('q', '')
+    sort          = request.GET.get('sort', '')
+    category_slug = request.GET.get('category', '')
 
-    # Search by name
-    query = request.GET.get('q')
-    if query:
-        products = products.filter(product_name__icontains=query)
-
-    # Sort
-    sort = request.GET.get('sort', 'newest')
-    if sort == 'price_low':
+    if q:
+        products = products.filter(product_name__icontains=q)
+    if category_slug:
+        products = products.filter(category__slug=category_slug)
+    if sort == 'price_asc':
         products = products.order_by('price')
-    elif sort == 'price_high':
+    elif sort == 'price_desc':
         products = products.order_by('-price')
-    else:
+    elif sort == 'newest':
         products = products.order_by('-created_at')
 
     context = {
-        'products':   products,
-        'categories': categories,
-        'query':      query,
-        'sort':       sort,
+        'products':          products,
+        'categories':        categories,
+        'q':                 q,
+        'sort':              sort,
+        'selected_category': category_slug,
     }
     return render(request, 'products/all_products.html', context)
+
+
+@login_required
+def add_review(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+
+    if request.method == 'POST':
+        rating  = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
+
+        if not rating:
+            messages.error(request, 'Please select a star rating.')
+            return redirect('get-product', slug=slug)
+
+        Review.objects.update_or_create(
+            product=product,
+            user=request.user,
+            defaults={'rating': int(rating), 'comment': comment}
+        )
+        messages.success(request, 'Your review has been submitted!')
+
+    return redirect('get-product', slug=slug)

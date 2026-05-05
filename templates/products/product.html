@@ -59,8 +59,32 @@
         padding: 10px;
         background: #f9f9f9;
     }
+
+    /* ── Reviews ── */
+    .review-avatar {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        background: #111;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .star-btn {
+        cursor: pointer;
+        font-size: 1.8rem;
+        color: #ccc;
+        transition: color 0.15s;
+        line-height: 1;
+    }
+    .star-btn.selected { color: #f5a623; }
+    .stars-display { color: #f5a623; letter-spacing: 2px; }
+    .stars-empty   { color: #ccc;     letter-spacing: 2px; }
 </style>
 {% endblock %}
+
 
 {% block start %}
 <div class="container py-4">
@@ -68,7 +92,9 @@
     <!-- Breadcrumb -->
     <nav class="mb-3" aria-label="breadcrumb">
         <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="/" class="text-warning text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item">
+                <a href="/" class="text-warning text-decoration-none">Home</a>
+            </li>
             <li class="breadcrumb-item">
                 <a href="{% url 'all-products' %}" class="text-warning text-decoration-none">Shop</a>
             </li>
@@ -82,6 +108,10 @@
         </ol>
     </nav>
 
+
+    <!-- ══════════════════════════════════════════
+         PRODUCT DETAIL
+    ══════════════════════════════════════════ -->
     <div class="row g-4">
 
         <!-- LEFT: Images -->
@@ -96,7 +126,6 @@
                 {% endif %}
             </div>
 
-            <!-- Thumbnails -->
             {% if images.count > 1 %}
             <div class="d-flex gap-2 mt-3 flex-wrap">
                 {% for img in images %}
@@ -115,6 +144,19 @@
 
                 <p class="text-muted small mb-1">{{ product.category.category_name }}</p>
                 <h3 class="fw-bold mb-2">{{ product.product_name }}</h3>
+
+                <!-- Inline rating summary (links down to reviews) -->
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="stars-display">
+                        {% for i in rating_range %}
+                            {% if i <= average_rating %}★{% else %}<span class="stars-empty">★</span>{% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="text-muted small">
+                        {{ average_rating }} · {{ review_count }} review{{ review_count|pluralize }}
+                    </span>
+                    <a href="#reviews" class="text-warning small text-decoration-none">See all</a>
+                </div>
 
                 <!-- Price -->
                 <div class="mb-3">
@@ -147,7 +189,6 @@
                 <form method="POST" action="{% url 'add-to-cart' product.slug %}">
                     {% csrf_token %}
 
-                    <!-- Color variants -->
                     {% if colors %}
                     <div class="mb-3">
                         <p class="fw-semibold small mb-2">
@@ -169,7 +210,6 @@
                     </div>
                     {% endif %}
 
-                    <!-- Size variants -->
                     {% if sizes %}
                     <div class="mb-3">
                         <p class="fw-semibold small mb-2">
@@ -191,7 +231,6 @@
                     </div>
                     {% endif %}
 
-                    <!-- Add to cart button -->
                     <div class="d-grid gap-2 mt-4">
                         {% if product.is_in_stock %}
                         <button type="submit" class="btn btn-warning btn-lg fw-bold">
@@ -225,7 +264,10 @@
         </div>
     </div>
 
-    <!-- Related products -->
+
+    <!-- ══════════════════════════════════════════
+         RELATED PRODUCTS
+    ══════════════════════════════════════════ -->
     {% if related %}
     <div class="mt-5">
         <h5 class="fw-bold mb-3">
@@ -241,7 +283,8 @@
                                  class="card-img-top related-img"
                                  alt="{{ rel.product_name }}">
                         {% else %}
-                            <div class="related-img d-flex align-items-center justify-content-center bg-light">
+                            <div class="related-img d-flex align-items-center
+                                        justify-content-center bg-light">
                                 <i class="bi bi-image text-muted"></i>
                             </div>
                         {% endif %}
@@ -257,26 +300,156 @@
     </div>
     {% endif %}
 
+
+    <!-- ══════════════════════════════════════════
+         REVIEWS
+    ══════════════════════════════════════════ -->
+    <div class="mt-5 pt-3 border-top" id="reviews">
+
+        <div class="row">
+            <div class="col-12">
+
+                <!-- Section heading + average -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                    <h4 class="fw-bold mb-0">
+                        <i class="bi bi-star-half text-warning me-2"></i>Customer Reviews
+                    </h4>
+                    {% if review_count > 0 %}
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="display-6 fw-bold lh-1">{{ average_rating }}</span>
+                        <div>
+                            <div class="stars-display fs-5">
+                                {% for i in rating_range %}
+                                    {% if i <= average_rating %}★{% else %}<span class="stars-empty">★</span>{% endif %}
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">
+                                {{ review_count }} review{{ review_count|pluralize }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Write / edit review form -->
+                {% if user.is_authenticated %}
+                <div class="card shadow-sm mb-4" style="border-radius:12px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-pencil-square text-warning me-2"></i>
+                            {% if user_review %}Edit Your Review{% else %}Write a Review{% endif %}
+                        </h5>
+
+                        <form method="POST" action="{% url 'add-review' product.slug %}">
+                            {% csrf_token %}
+
+                            <!-- Star picker -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">Your Rating *</label>
+                                <div class="d-flex gap-1" id="starPicker">
+                                    {% for i in rating_range %}
+                                    <span class="star-btn
+                                                 {% if user_review and i <= user_review.rating %}selected{% endif %}"
+                                          data-value="{{ i }}">★</span>
+                                    {% endfor %}
+                                </div>
+                                <input type="hidden" name="rating" id="ratingInput"
+                                       value="{% if user_review %}{{ user_review.rating }}{% endif %}">
+                            </div>
+
+                            <!-- Comment -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small">
+                                    Comment <span class="text-muted fw-normal">(optional)</span>
+                                </label>
+                                <textarea name="comment" class="form-control" rows="3"
+                                          placeholder="Share your experience with this product...">{% if user_review %}{{ user_review.comment }}{% endif %}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-dark px-4">
+                                <i class="bi bi-send me-2"></i>
+                                {% if user_review %}Update Review{% else %}Submit Review{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {% else %}
+                <div class="alert border d-flex align-items-center gap-2 mb-4" style="border-radius:10px;">
+                    <i class="bi bi-person-circle text-warning fs-5"></i>
+                    <span>
+                        <a href="{% url 'login' %}?next={{ request.path }}"
+                           class="fw-semibold text-warning text-decoration-none">Log in</a>
+                        to leave a review.
+                    </span>
+                </div>
+                {% endif %}
+
+                <!-- Reviews list -->
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="review-avatar">
+                            {{ review.user.username|first|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-1">
+                                <div>
+                                    <span class="fw-semibold">{{ review.user.username }}</span>
+                                    {% if review.user == request.user %}
+                                        <span class="badge bg-warning text-dark ms-1"
+                                              style="font-size:0.7rem;">You</span>
+                                    {% endif %}
+                                    <span class="stars-display ms-2">
+                                        {% for i in rating_range %}
+                                            {% if i <= review.rating %}★{% else %}<span class="stars-empty">★</span>{% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            {% if review.comment %}
+                            <p class="mt-1 mb-0 text-muted" style="font-size:0.93rem;">
+                                {{ review.comment }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                        <hr class="my-2 opacity-25">
+                    {% endif %}
+                    {% endfor %}
+
+                {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-chat-square-text fs-1 d-block mb-2 opacity-25"></i>
+                        No reviews yet. Be the first to share your thoughts!
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
-    // Swap main image on thumbnail click
+    // ── Image gallery ──────────────────────────────────
     function changeImage(thumb, src) {
         document.getElementById('mainImage').src = src;
         document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
         thumb.classList.add('active');
     }
 
-    // Select color/size variant
+    // ── Variant selector ──────────────────────────────
     function selectVariant(btn, type, value) {
-        // Deselect siblings
         btn.closest('.d-flex').querySelectorAll('.variant-btn').forEach(b => {
             b.classList.remove('selected');
         });
         btn.classList.add('selected');
-
         if (type === 'color') {
             document.getElementById('colorInput').value = value;
             document.getElementById('selectedColor').textContent = value;
@@ -285,5 +458,37 @@
             document.getElementById('selectedSize').textContent = value;
         }
     }
+
+    // ── Star picker ───────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        const stars       = document.querySelectorAll('.star-btn');
+        const ratingInput = document.getElementById('ratingInput');
+        if (!stars.length) return;
+
+        function paintStars(upTo) {
+            stars.forEach((s, idx) => {
+                s.style.color = idx < upTo ? '#f5a623' : '#ccc';
+            });
+        }
+
+        // Initialise with saved value
+        const saved = parseInt(ratingInput.value) || 0;
+        paintStars(saved);
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const val = parseInt(this.dataset.value);
+                ratingInput.value = val;
+                paintStars(val);
+            });
+            star.addEventListener('mouseenter', function () {
+                paintStars(parseInt(this.dataset.value));
+            });
+        });
+
+        document.getElementById('starPicker').addEventListener('mouseleave', function () {
+            paintStars(parseInt(ratingInput.value) || 0);
+        });
+    });
 </script>
 {% endblock %}

@@ -21,11 +21,28 @@
         {% for product in products %}
         <div class="col">
             <div class="card border-0 shadow-sm h-100" style="border-radius:12px;overflow:hidden;">
-                <div style="height:200px;background:#f9f9f9;overflow:hidden;">
-                    {% if product.product_images.first %}
-                        <img src="/media/{{ product.product_images.first.image }}"
+                <div style="position:relative;height:200px;background:#f9f9f9;overflow:hidden;">
+                    {% if product.images.first %}
+                        <img src="/media/{{ product.images.first.image }}"
                              style="width:100%;height:100%;object-fit:contain;padding:12px;"
                              alt="{{ product.product_name }}">
+                    {% else %}
+                        <div style="height:100%;display:flex;align-items:center;justify-content:center;background:#f0f0f0;">
+                            <i class="bi bi-image text-muted" style="font-size:2.5rem;"></i>
+                        </div>
+                    {% endif %}
+                    {% if product.discount > 0 %}
+                        <span style="position:absolute;top:10px;left:10px;background:#ef4444;color:#fff;
+                                     font-size:0.72rem;font-weight:700;padding:3px 8px;border-radius:20px;">
+                            -{{ product.discount }}%
+                        </span>
+                    {% endif %}
+                    {% if not product.is_in_stock %}
+                        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);color:#fff;
+                                    font-weight:700;font-size:0.9rem;display:flex;align-items:center;
+                                    justify-content:center;letter-spacing:1px;">
+                            Out of Stock
+                        </div>
                     {% endif %}
                 </div>
                 <div class="card-body p-3">

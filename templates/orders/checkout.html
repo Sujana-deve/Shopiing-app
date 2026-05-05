@@ -1,145 +1,199 @@
 {% extends 'base/base.html' %}
-
 {% block title %}Checkout — FashionHub{% endblock %}
 
 {% block start %}
 <div class="container py-5">
-  <h2 class="fw-bold mb-4">Checkout</h2>
-
-  <form method="POST" action="{% url 'place-order' %}">
-    {% csrf_token %}
-    <div class="row g-4">
-
-      <!-- LEFT: Shipping Form -->
-      <div class="col-lg-7">
-        <div class="card border-0 shadow-sm p-4">
-          <h5 class="fw-bold mb-3">Shipping Information</h5>
-
-          <div class="row g-3">
-            <div class="col-sm-6">
-              <label class="form-label">First Name *</label>
-              <input type="text" name="first_name" class="form-control"
-                     value="{{ initial.first_name }}" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">Last Name *</label>
-              <input type="text" name="last_name" class="form-control"
-                     value="{{ initial.last_name }}" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">Email *</label>
-              <input type="email" name="email" class="form-control"
-                     value="{{ initial.email }}" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">Phone *</label>
-              <input type="text" name="phone" class="form-control"
-                     placeholder="98XXXXXXXX" required>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Address *</label>
-              <textarea name="address" class="form-control" rows="2"
-                        placeholder="Street address, house no." required></textarea>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">City *</label>
-              <input type="text" name="city" class="form-control"
-                     placeholder="Pokhara" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">State / Province *</label>
-              <input type="text" name="state" class="form-control"
-                     placeholder="Gandaki" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">ZIP / Postal Code *</label>
-              <input type="text" name="zip_code" class="form-control"
-                     placeholder="33700" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label">Country</label>
-              <input type="text" name="country" class="form-control" value="Nepal">
-            </div>
-          </div>
-
-          <!-- Payment Method -->
-          <h5 class="fw-bold mt-4 mb-3">Payment Method</h5>
-          <div class="d-flex gap-3">
-            <div class="form-check border rounded p-3 flex-fill">
-              <input class="form-check-input" type="radio" name="payment_method"
-                     id="cod" value="cash_on_delivery" checked>
-              <label class="form-check-label fw-semibold" for="cod">
-                <i class="fas fa-money-bill-wave me-1 text-success"></i> Cash on Delivery
-              </label>
-            </div>
-            <div class="form-check border rounded p-3 flex-fill">
-              <input class="form-check-input" type="radio" name="payment_method"
-                     id="online" value="online">
-              <label class="form-check-label fw-semibold" for="online">
-                <i class="fas fa-credit-card me-1 text-primary"></i> Online Payment
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: Order Summary -->
-      <div class="col-lg-5">
-        <div class="card border-0 shadow-sm p-4">
-          <h5 class="fw-bold mb-3">Order Summary</h5>
-
-          {% for item in items %}
-          <div class="d-flex align-items-center mb-3 gap-3">
-            {% if item.product.product_images.first %}
-            <img src="{{ item.product.product_images.first.image.url }}"
-                 class="rounded" width="60" height="60" style="object-fit:cover;">
-            {% endif %}
-            <div class="flex-grow-1">
-              <div class="fw-semibold">{{ item.product.product_name }}</div>
-              {% if item.color_variant %}
-                <small class="text-muted">Color: {{ item.color_variant.color_name }}</small>
-              {% endif %}
-              {% if item.size_variant %}
-                <small class="text-muted"> | Size: {{ item.size_variant.size_name }}</small>
-              {% endif %}
-              <div class="text-muted small">Qty: {{ item.quantity }}</div>
-            </div>
-            <div class="fw-bold">Rs. {{ item.get_total_price }}</div>
-          </div>
-          {% endfor %}
-
-          <hr>
-
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Subtotal</span>
-            <span>Rs. {{ subtotal }}</span>
-          </div>
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Shipping</span>
-            <span>
-              {% if shipping == 0 %}
-                <span class="text-success fw-semibold">Free</span>
-              {% else %}
-                Rs. {{ shipping }}
-              {% endif %}
-            </span>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
-            <span>Total</span>
-            <span>Rs. {{ grand_total }}</span>
-          </div>
-
-          <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
-            <i class="fas fa-lock me-2"></i>Place Order
-          </button>
-          <a href="{% url 'cart' %}" class="btn btn-outline-secondary w-100 mt-2">
-            ← Back to Cart
-          </a>
-        </div>
-      </div>
-
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-bag-check text-warning fs-4"></i>
+        <h4 class="fw-bold mb-0">Checkout</h4>
     </div>
-  </form>
+
+    <form method="POST" action="{% url 'place-order' %}">
+        {% csrf_token %}
+        <div class="row g-4">
+
+            <!-- LEFT: Shipping Form -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm p-4" style="border-radius:14px;">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-geo-alt text-warning me-2"></i>Shipping Information
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">First Name *</label>
+                            <input type="text" name="first_name" class="form-control"
+                                   value="{{ initial.first_name }}" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">Last Name *</label>
+                            <input type="text" name="last_name" class="form-control"
+                                   value="{{ initial.last_name }}" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">Email *</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ initial.email }}" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">Phone *</label>
+                            <input type="text" name="phone" class="form-control"
+                                   placeholder="98XXXXXXXX" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Address *</label>
+                            <textarea name="address" class="form-control" rows="2"
+                                      placeholder="Street address, house no." required
+                                      style="border-radius:10px;"></textarea>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">City *</label>
+                            <input type="text" name="city" class="form-control"
+                                   placeholder="Pokhara" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">State / Province *</label>
+                            <input type="text" name="state" class="form-control"
+                                   placeholder="Gandaki" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">ZIP / Postal Code *</label>
+                            <input type="text" name="zip_code" class="form-control"
+                                   placeholder="33700" required
+                                   style="border-radius:10px;">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label fw-semibold small">Country</label>
+                            <input type="text" name="country" class="form-control"
+                                   value="Nepal" style="border-radius:10px;">
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <h5 class="fw-bold mt-4 mb-3">
+                        <i class="bi bi-credit-card text-warning me-2"></i>Payment Method
+                    </h5>
+                    <div class="d-flex gap-3">
+                        <div class="form-check border rounded-3 p-3 flex-fill"
+                             style="cursor:pointer;">
+                            <input class="form-check-input" type="radio"
+                                   name="payment_method" id="cod"
+                                   value="cash_on_delivery" checked>
+                            <label class="form-check-label fw-semibold small" for="cod"
+                                   style="cursor:pointer;">
+                                <i class="bi bi-cash-coin me-1 text-success"></i>
+                                Cash on Delivery
+                            </label>
+                        </div>
+                        <div class="form-check border rounded-3 p-3 flex-fill"
+                             style="cursor:pointer;">
+                            <input class="form-check-input" type="radio"
+                                   name="payment_method" id="online"
+                                   value="online">
+                            <label class="form-check-label fw-semibold small" for="online"
+                                   style="cursor:pointer;">
+                                <i class="bi bi-phone me-1 text-primary"></i>
+                                Online Payment
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Order Summary -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm p-4"
+                     style="border-radius:14px; position:sticky; top:80px;">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-receipt text-warning me-2"></i>Order Summary
+                    </h5>
+
+                    {% for item in items %}
+                    <div class="d-flex align-items-center mb-3 gap-3">
+                        {% if item.product.images.first %}
+                            <img src="{{ item.product.images.first.image.url }}"
+                                 class="rounded-3 flex-shrink-0"
+                                 style="width:64px;height:64px;object-fit:contain;
+                                        background:#f9f9f9;padding:4px;"
+                                 alt="{{ item.product.product_name }}">
+                        {% else %}
+                            <div class="rounded-3 flex-shrink-0 d-flex align-items-center
+                                        justify-content-center bg-light"
+                                 style="width:64px;height:64px;">
+                                <i class="bi bi-image text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold small">{{ item.product.product_name }}</div>
+                            <div class="text-muted" style="font-size:0.78rem;">
+                                {% if item.color_variant %}
+                                    Color: {{ item.color_variant.color_name }}
+                                {% endif %}
+                                {% if item.size_variant %}
+                                    &nbsp;|&nbsp;Size: {{ item.size_variant.size_name }}
+                                {% endif %}
+                            </div>
+                            <div class="text-muted" style="font-size:0.78rem;">
+                                Qty: {{ item.quantity }}
+                            </div>
+                        </div>
+                        <div class="fw-bold small text-nowrap">
+                            Rs. {{ item.get_total_price }}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Subtotal</span>
+                        <span>Rs. {{ subtotal }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 small">
+                        <span class="text-muted">Shipping</span>
+                        <span>
+                            {% if shipping == 0 %}
+                                <span class="text-success fw-semibold">Free</span>
+                            {% else %}
+                                Rs. {{ shipping }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between fw-bold mb-4">
+                        <span>Total</span>
+                        <span class="fs-5">Rs. {{ grand_total }}</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-dark btn-lg fw-semibold"
+                                style="border-radius:10px;">
+                            <i class="bi bi-lock me-2"></i>Place Order
+                        </button>
+                        <a href="{% url 'cart' %}" class="btn btn-outline-secondary"
+                           style="border-radius:10px;">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Cart
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check me-1 text-success"></i>
+                            Secure checkout · SSL encrypted
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
 </div>
-{% endblock start %}
+{% endblock %}

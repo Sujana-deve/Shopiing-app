@@ -78,8 +78,8 @@
             <div class="card product-card h-100 border-0 shadow-sm">
 
                 <div class="product-img-wrap">
-                    {% if product.product_images.first %}
-                        <img src="/media/{{ product.product_images.first.image }}"
+                    {% if product.images.first %}
+                        <img src="/media/{{ product.images.first.image }}"
                              class="product-img" alt="{{ product.product_name }}">
                     {% else %}
                         <div class="no-image d-flex align-items-center justify-content-center">
