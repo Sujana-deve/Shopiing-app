@@ -79,30 +79,55 @@
                     <h5 class="fw-bold mt-4 mb-3">
                         <i class="bi bi-credit-card text-warning me-2"></i>Payment Method
                     </h5>
+
                     <div class="d-flex gap-3">
-                        <div class="form-check border rounded-3 p-3 flex-fill"
-                             style="cursor:pointer;">
+
+                        <!-- Cash on Delivery -->
+                        <div class="form-check border rounded-3 p-3 flex-fill payment-card"
+                             id="card-cod"
+                             style="cursor:pointer; transition: border-color .2s, background .2s;">
                             <input class="form-check-input" type="radio"
                                    name="payment_method" id="cod"
-                                   value="cash_on_delivery" checked>
-                            <label class="form-check-label fw-semibold small" for="cod"
-                                   style="cursor:pointer;">
+                                   value="cod" checked
+                                   onchange="highlightPayment()">
+                            <label class="form-check-label fw-semibold small d-block"
+                                   for="cod" style="cursor:pointer;">
                                 <i class="bi bi-cash-coin me-1 text-success"></i>
                                 Cash on Delivery
+                                <div class="text-muted fw-normal mt-1" style="font-size:.72rem;">
+                                    Pay when your order arrives
+                                </div>
                             </label>
                         </div>
-                        <div class="form-check border rounded-3 p-3 flex-fill"
-                             style="cursor:pointer;">
+
+                        <!-- eSewa -->
+                        <div class="form-check border rounded-3 p-3 flex-fill payment-card"
+                             id="card-esewa"
+                             style="cursor:pointer; transition: border-color .2s, background .2s;">
                             <input class="form-check-input" type="radio"
-                                   name="payment_method" id="online"
-                                   value="online">
-                            <label class="form-check-label fw-semibold small" for="online"
-                                   style="cursor:pointer;">
-                                <i class="bi bi-phone me-1 text-primary"></i>
-                                Online Payment
+                                   name="payment_method" id="esewa"
+                                   value="esewa"
+                                   onchange="highlightPayment()">
+                            <label class="form-check-label fw-semibold small d-block"
+                                   for="esewa" style="cursor:pointer;">
+                                <span style="color:#4caf50;">💚 eSewa</span>
+                                <span class="badge bg-warning text-dark ms-1"
+                                      style="font-size:.6rem; vertical-align:middle;">TEST</span>
+                                <div class="text-muted fw-normal mt-1" style="font-size:.72rem;">
+                                    Pay instantly via eSewa wallet
+                                </div>
                             </label>
                         </div>
+
                     </div>
+
+                    <!-- eSewa test hint — only visible when eSewa is selected -->
+                    <div id="esewa-hint" class="mt-3 p-3 rounded-3 d-none"
+                         style="background:#f0fff4; border:1px solid #c3e6cb; font-size:.8rem;">
+                        <strong>🧪 Test mode:</strong> Use eSewa ID <code>9806800001</code>,
+                        Password <code>Nepal@123</code>, MPIN <code>1122</code>
+                    </div>
+
                 </div>
             </div>
 
@@ -175,8 +200,9 @@
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-dark btn-lg fw-semibold"
-                                style="border-radius:10px;">
-                            <i class="bi bi-lock me-2"></i>Place Order
+                                style="border-radius:10px;" id="place-order-btn">
+                            <i class="bi bi-lock me-2"></i>
+                            <span id="btn-label">Place Order</span>
                         </button>
                         <a href="{% url 'cart' %}" class="btn btn-outline-secondary"
                            style="border-radius:10px;">
@@ -196,4 +222,33 @@
         </div>
     </form>
 </div>
+
+<script>
+function highlightPayment() {
+    const codCard    = document.getElementById('card-cod');
+    const esewaCard  = document.getElementById('card-esewa');
+    const esewaHint  = document.getElementById('esewa-hint');
+    const btnLabel   = document.getElementById('btn-label');
+    const esewaRadio = document.getElementById('esewa');
+
+    if (esewaRadio.checked) {
+        esewaCard.style.borderColor  = '#4caf50';
+        esewaCard.style.background   = '#f0fff4';
+        codCard.style.borderColor    = '';
+        codCard.style.background     = '';
+        esewaHint.classList.remove('d-none');
+        btnLabel.textContent         = 'Pay with eSewa';
+    } else {
+        codCard.style.borderColor    = '#333';
+        codCard.style.background     = '#f8f9fa';
+        esewaCard.style.borderColor  = '';
+        esewaCard.style.background   = '';
+        esewaHint.classList.add('d-none');
+        btnLabel.textContent         = 'Place Order';
+    }
+}
+
+// Run on load to set initial state
+highlightPayment();
+</script>
 {% endblock %}

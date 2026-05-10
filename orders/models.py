@@ -71,3 +71,9 @@ class OrderItem(BaseModel):
 
     def get_total(self):
         return self.price * self.quantity
+    
+PAYMENT_METHOD_CHOICES = [
+    ('cash_on_delivery', 'Cash on Delivery'),
+    ('online',           'Online Payment'),
+    ('esewa',            'eSewa'),
+]

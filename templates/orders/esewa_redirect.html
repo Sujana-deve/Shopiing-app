@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Redirecting to eSewa — FashionHub{% endblock %}
+
+{% block start %}
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center" style="max-width:460px; width:100%">
+        <div style="font-size:2.8rem" class="mb-3">💚</div>
+        <h5 class="fw-bold mb-1">Redirecting to eSewa</h5>
+        <p class="text-muted mb-1">Order <strong>#{{ order.get_short_id }}</strong></p>
+        <p class="text-muted mb-4">Total: <strong>Rs. {{ order.grand_total }}</strong></p>
+        <div class="spinner-border text-success mx-auto" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted small mt-3">Do not close this window.</p>
+    </div>
+</div>
+
+<form id="esewa-form" method="POST" action="{{ esewa_url }}">
+    <input type="hidden" name="amount"                  value="{{ order.subtotal }}">
+    <input type="hidden" name="tax_amount"              value="0">
+    <input type="hidden" name="total_amount"            value="{{ total_amount }}">
+    <input type="hidden" name="transaction_uuid"        value="{{ transaction_uuid }}">
+    <input type="hidden" name="product_code"            value="{{ product_code }}">
+    <input type="hidden" name="product_service_charge"  value="0">
+    <input type="hidden" name="product_delivery_charge" value="{{ order.shipping_charge }}">
+    <input type="hidden" name="success_url"             value="{{ success_url }}">
+    <input type="hidden" name="failure_url"             value="{{ failure_url }}">
+    <input type="hidden" name="signed_field_names"      value="total_amount,transaction_uuid,product_code">
+    <input type="hidden" name="signature"               value="{{ signature }}">
+</form>
+
+<script>
+    setTimeout(() => document.getElementById('esewa-form').submit(), 1800);
+</script>
+{% endblock %}

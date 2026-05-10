@@ -102,3 +102,9 @@ EMAIL_USE_TLS       = True
 EMAIL_PORT          = 587
 EMAIL_HOST_USER     = os.getenv("EMAIL_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASS")
+
+ESEWA_MERCHANT_CODE = os.getenv('ESEWA_MERCHANT_CODE')
+ESEWA_SECRET_KEY    = os.getenv('ESEWA_SECRET_KEY')
+ESEWA_PAYMENT_URL   = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
+ESEWA_STATUS_URL    = 'https://uat.esewa.com.np/api/epay/transaction/status/'
+print("ESEWA KEY LOADED:", ESEWA_SECRET_KEY)
